@@ -1,0 +1,55 @@
+direction: right
+
+User: {
+  shape: sql_table
+
+  id: string {constraint: [primary_key; unique]}
+  name: string
+
+  created_at: int
+  updated_at: int
+}
+
+Group: {
+  shape: sql_table
+
+  id: string {constraint: [primary_key; unique]}
+  name: string
+
+  created_at: int
+  updated_at: int
+}
+
+GroupUserList: {
+  shape: sql_table
+
+  id: string {constraint: [primary_key; unique]}
+  group_id: string {constraint: foreign_key}
+  employee_id: string {constraint: foreign_key}
+  role: string
+
+  created_at: int
+  updated_at: int
+}
+
+WorkDay: {
+  shape: sql_table
+
+  id: string {constraint: [primary_key; unique]}
+  group_id: string {constraint: foreign_key}
+  employee_id: string {constraint: foreign_key}
+
+  start: int
+  end: int
+  break: int
+  overtime: int
+
+  created_at: int
+  updated_at: int
+}
+
+WorkDay.group_id -> Group.id
+WorkDay.employee_id -> User.id
+
+GroupUserList.group_id -> Group.id
+GroupUserList.employee_id -> User.id
