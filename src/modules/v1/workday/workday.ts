@@ -1,6 +1,6 @@
 import express from "express";
 
-import { logInformation } from "middlewares/logger.middleware";
+import { logInformation } from "@middlewares/logger.middleware";
 
 //Config in tsconfig.json
 import { pingWorkday } from "@workday/controllers/workday.controller.ts";

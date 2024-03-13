@@ -1,16 +1,12 @@
 import { Express, Router } from "express";
-import { Db } from "mongodb";
 
 import { initializeApp } from "./app";
-import { initializeMongoDB } from "./database";
 
 class Server {
   app: Express;
-  mongodb: Db | null = null;
 
   constructor() {
     this.app = initializeApp();
-    this.mongodb = initializeMongoDB();
   }
 
   loadRouters(routers: Router[]) {

@@ -1,13 +1,15 @@
 import express from "express";
-import { logInformation } from "middlewares/logger.middleware";
+import { logInformation } from "@middlewares/logger.middleware";
 
 //Config in tsconfig.json
-import { pingGroup } from "@group/controllers/group.controller.ts";
+import { listMembers } from "@group/controllers/group.controller.ts";
 
 const groupRouter = express.Router();
 
+//middlewares
 groupRouter.use(logInformation);
 
-groupRouter.get("/ping", pingGroup);
+//routes
+groupRouter.get("/list", listMembers);
 
 export default groupRouter;
