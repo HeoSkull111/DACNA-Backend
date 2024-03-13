@@ -130,3 +130,4 @@ dist
 .pnp.*
 
 src/configs/firebase.js
+src/configs/mongodb.js
