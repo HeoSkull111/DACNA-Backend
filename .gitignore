@@ -129,5 +129,5 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-src/configs/firebase.js
-src/configs/mongodb.js
+src/configs/firebase.json
+src/configs/mongodb.json
