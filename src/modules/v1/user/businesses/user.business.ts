@@ -2,9 +2,9 @@ import bcrypt from "bcrypt";
 
 import userRepository from "@user/repositories/user.repository";
 
-import { LoginUserForm, RegisterUserForm } from "@user/models/user.model";
+import { LoginUserForm, RegisterUserForm, User } from "@user/models/user.model";
 
-const registerUser = async (user: RegisterUserForm) => {
+const registerUser = async (user: RegisterUserForm): Promise<Omit<User, "password">> => {
   //Check if user already exists
   const tempUser = await userRepository.findUserByEmail(user.email);
 
@@ -21,11 +21,21 @@ const registerUser = async (user: RegisterUserForm) => {
 
   userDocument.password = await bcrypt.hash(user.password, salt);
 
-  const repositoryResult = await userRepository.addUser(userDocument);
-  return repositoryResult.insertedId;
+  const repositoreResult = await userRepository.addUser(userDocument);
+
+  if (!repositoreResult) {
+    throw new Error("Error adding user to database");
+  }
+
+  return {
+    id: repositoreResult.insertedId.toHexString(),
+    email: user.email,
+    first_name: user.first_name,
+    last_name: user.last_name,
+  };
 };
 
-const loginUser = async (user: LoginUserForm) => {
+const loginUser = async (user: LoginUserForm): Promise<Omit<User, "password">> => {
   const tempUser = await userRepository.findUserByEmail(user.email);
 
   if (!tempUser) {
@@ -38,7 +48,12 @@ const loginUser = async (user: LoginUserForm) => {
     throw new Error("Invalid credentials");
   }
 
-  return tempUser._id;
+  return {
+    id: tempUser._id.toHexString(),
+    email: tempUser.email,
+    first_name: tempUser.first_name,
+    last_name: tempUser.last_name,
+  };
 };
 
 export default {

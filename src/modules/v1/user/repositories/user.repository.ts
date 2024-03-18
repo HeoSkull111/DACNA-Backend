@@ -1,7 +1,7 @@
 import { db } from "@core/mongo";
-import { Filter, ObjectId } from "mongodb";
+import { InsertOneResult, Document, ObjectId } from "mongodb";
 
-const addUser = async (user: any) => {
+const addUser = async (user: any): Promise<InsertOneResult<Document>> => {
   const result = await db.collection("users").insertOne(user);
   return result;
 };
