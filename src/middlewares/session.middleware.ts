@@ -8,10 +8,14 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
       return res.status(500).json({ message: "Internal Server Error" });
     }
 
-    console.log(sessionData);
-
     if (!sessionData) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { expires } = sessionData.cookie;
+
+    if (expires && expires.getTime() < Date.now()) {
+      return res.status(401).json({ message: "Session Expired. Please Login Again" });
     }
 
     next();
