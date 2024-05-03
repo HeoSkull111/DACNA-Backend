@@ -6,11 +6,29 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import mongodb from "../configs/mongodb.json";
+import { User } from "@user/models/user.model";
+
+declare module "express-session" {
+  export interface SessionData {
+    user: Omit<User, "password"> | null;
+  }
+}
 
 export const initializeApp = () => {
   const app = express();
 
-  app.use(cors());
+  app.use(
+    cors({
+      origin: ["http://localhost:4200"],
+      credentials: true,
+      optionsSuccessStatus: 204,
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      exposedHeaders: ["Content-Range", "X-Content-Range"],
+      preflightContinue: false,
+      maxAge: 3600,
+    })
+  );
   app.use(cookieParser());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -25,9 +43,9 @@ export const initializeApp = () => {
         dbName: mongodb.database,
       }),
       cookie: {
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24, // 1 day in milliseconds
         httpOnly: true,
-        secure: true,
-        maxAge: 1000 * 60 * 60 * 24,
       },
     })
   );

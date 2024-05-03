@@ -6,7 +6,11 @@ const addUser = async (user: any): Promise<InsertOneResult<Document>> => {
   return result;
 };
 
-const findUser = async (id: ObjectId) => {
+const findUser = async (id: ObjectId | string) => {
+  if (typeof id === "string") {
+    id = new ObjectId(id);
+  }
+
   const result = await db.collection("users").findOne({
     _id: id,
   });

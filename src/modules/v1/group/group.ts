@@ -1,15 +1,37 @@
 import express from "express";
-import { logInformation } from "@middlewares/logger.middleware";
 
-//Config in tsconfig.json
-import { listMembers } from "@group/controllers/group.controller.ts";
+//middlewares
+import { logInformation } from "@middlewares/logger.middleware";
+import { isAuthenticated } from "@middlewares/session.middleware";
+
+//validations
+import {
+  validateGetGroup,
+  validateListMembers,
+  validateCreateGroup,
+  validateUpdateGroup,
+  validateDeleteGroup,
+} from "@group/validations/group.validation.ts";
+
+//controllers
+import {
+  getGroup,
+  createGroup,
+  updateGroup,
+  deleteGroup,
+  listMembers,
+} from "@group/controllers/group.controller.ts";
 
 const groupRouter = express.Router();
 
-//middlewares
 groupRouter.use(logInformation);
+groupRouter.use(isAuthenticated);
 
 //routes
-groupRouter.get("/list", listMembers);
+groupRouter.get("/:id", validateGetGroup, getGroup);
+groupRouter.get("/list", validateListMembers, listMembers);
+groupRouter.post("/create", validateCreateGroup, createGroup);
+groupRouter.put("/:id", validateUpdateGroup, updateGroup);
+groupRouter.delete("/:id", validateDeleteGroup, deleteGroup);
 
 export default groupRouter;
