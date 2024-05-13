@@ -4,6 +4,8 @@ export const validateGetGroup = [
   query("id").isString().notEmpty().withMessage("Group id is required"),
 ];
 
+export const validateGetGroups = [query("page").default(1), query("limit").default(5)];
+
 export const validateCreateGroup = [
   body("name")
     .isString()
@@ -44,8 +46,23 @@ export const validateListMembers = [
     .isString()
     .notEmpty()
     .withMessage("Group id is required")
-    .isLength({ min: 12, max: 12 })
-    .withMessage("Group id must be 12 characters long"),
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
   query("page").default(1).isInt().withMessage("Page must be a number"),
   query("limit").default(10).isInt().withMessage("Limit must be a number"),
+];
+
+export const validateGetMember = [
+  query("group_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Group id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
+  query("member_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Member id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Member id must be 24 characters long"),
 ];

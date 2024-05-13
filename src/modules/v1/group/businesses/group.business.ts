@@ -7,7 +7,7 @@ import {
   DeleteGroup,
 } from "@group/repositories/group.repository";
 
-import { ListMembers, AddMember } from "@group/repositories/group_member.repository";
+import { ListMembers, GetMember, AddMember } from "@group/repositories/group_member.repository";
 
 //models
 import { CreateGroupForm, UpdateGroupForm } from "@group/models/group.model";
@@ -22,20 +22,40 @@ const getGroup = async (groupID: string) => {
   return group;
 };
 
-const listMembers = async (page: number, limit: number, groupID: string) => {
+const getMember = async (groupID: string, memberID: string) => {
   if (!groupID) {
     throw new Error("Group ID is required");
   }
+
+  if (!memberID) {
+    throw new Error("Member ID is required");
+  }
+
+  const member = await GetMember(groupID, memberID);
+
+  return member;
+};
+
+const listMembers = async (page: number | string, limit: number | string, groupID: string) => {
+  if (!groupID) {
+    throw new Error("Group ID is required");
+  }
+
+  page = parseInt(page as string);
+  limit = parseInt(limit as string);
 
   const members = await ListMembers(groupID, page, limit);
 
   return members;
 };
 
-const listGroups = async (page: number, limit: number, userID: string) => {
+const listGroups = async (page: number | string, limit: number | string, userID: string) => {
   if (!userID) {
     throw new Error("User ID is required");
   }
+
+  page = parseInt(page as string);
+  limit = parseInt(limit as string);
 
   const groups = await ListGroups(userID, page, limit);
 
@@ -78,6 +98,7 @@ const deleteGroup = async (groupID: string) => {
 
 export default {
   getGroup,
+  getMember,
   listMembers,
   listGroups,
   createGroup,

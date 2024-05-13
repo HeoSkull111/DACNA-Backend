@@ -1,22 +1,73 @@
 import { db } from "@core/mongo";
 import { ObjectId } from "mongodb";
 
-export const ListGroups = (user_id: string, page?: number, limit?: number) => {
+export const ListGroups = async (user_id: string, page?: number, limit?: number) => {
   const userObjectID = ObjectId.createFromHexString(user_id);
 
-  const query = {
-    user_id: userObjectID,
-  };
-
   const _page = page || 1;
-  const _limit = limit || 10;
+  const _limit = limit || 5;
 
-  return db
-    .collection("groups")
-    .find(query)
-    .skip((_page - 1) * _limit)
-    .limit(_limit)
-    .toArray();
+  const countPipeline = [
+    {
+      $count: "total",
+    },
+  ];
+
+  const dataPipeline = [
+    {
+      $lookup: {
+        from: "groups",
+        localField: "group_id",
+        foreignField: "_id",
+        as: "group",
+      },
+    },
+    {
+      $unwind: "$group",
+    },
+    {
+      $skip: (_page - 1) * _limit,
+    },
+    {
+      $limit: _limit,
+    },
+    {
+      $project: {
+        id: "$group._id",
+        name: "$group.name",
+        description: "$group.description",
+        created_at: "$group.created_at",
+        updated_at: "$group.updated_at",
+      },
+    },
+  ];
+
+  //return the total and the groups
+  const pipeline = [
+    {
+      $match: {
+        user_id: userObjectID,
+        role: "owner",
+      },
+    },
+    {
+      $facet: {
+        total: countPipeline,
+        groups: dataPipeline,
+      },
+    },
+    {
+      $project: {
+        total: {
+          $arrayElemAt: ["$total.total", 0],
+        },
+        groups: 1,
+      },
+    },
+  ];
+
+  const cursor = db.collection("group_members").aggregate(pipeline);
+  return await cursor.next();
 };
 
 export const GetGroup = (group_id: string) => {
