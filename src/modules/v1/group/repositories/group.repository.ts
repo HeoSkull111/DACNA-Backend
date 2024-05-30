@@ -77,7 +77,17 @@ export const GetGroup = (group_id: string) => {
     _id: groupObjectID,
   };
 
-  return db.collection("groups").findOne(query);
+  //change _id to id
+  const projection = {
+    _id: 0,
+    id: "$_id",
+    name: 1,
+    description: 1,
+    created_at: 1,
+    updated_at: 1,
+  };
+
+  return db.collection("groups").findOne(query, { projection });
 };
 
 export const CreateGroup = (data: any) => {

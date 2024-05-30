@@ -23,12 +23,17 @@ export const initializeApp = () => {
       credentials: true,
       optionsSuccessStatus: 204,
       methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Origin", "Content-Type", "Authorization"],
       exposedHeaders: ["Content-Range", "X-Content-Range"],
-      preflightContinue: false,
+      preflightContinue: true,
       maxAge: 3600,
     })
   );
+
+  app.options("*", (_, res) => {
+    res.sendStatus(200);
+  });
+
   app.use(cookieParser());
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
