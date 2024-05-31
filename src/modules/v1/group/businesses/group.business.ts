@@ -10,7 +10,7 @@ import {
 import { ListMembers, GetMember, AddMember } from "@group/repositories/group_member.repository";
 
 //models
-import { CreateGroupForm, UpdateGroupForm } from "@group/models/group.model";
+import type { CreateGroupForm, UpdateGroupForm } from "@group/models/group.model";
 
 const getGroup = async (groupID: string) => {
   if (!groupID) {
