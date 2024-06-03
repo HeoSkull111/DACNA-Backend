@@ -41,8 +41,28 @@ const findWorkday = async (id: ObjectId | string): Promise<WithId<Workday> | nul
   return result;
 };
 
+const findCurrentWorkday = async (user_id: string): Promise<WithId<Workday> | null> => {
+  const result = await db.collection<Workday>("workdays").findOne({
+    user_id: user_id,
+    status: "CHECKED_IN",
+  });
+
+  return result;
+};
+
+const IsUserWorking = async (user_id: string): Promise<WithId<Workday> | null> => {
+  const result = await db.collection<Workday>("workdays").findOne({
+    user_id: user_id,
+    status: "CHECKED_IN",
+  });
+
+  return result;
+};
+
 export default {
   addWorkday,
   updateWorkday,
   findWorkday,
+  findCurrentWorkday,
+  IsUserWorking,
 };

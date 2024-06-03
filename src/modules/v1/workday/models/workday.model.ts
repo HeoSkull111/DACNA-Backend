@@ -16,12 +16,9 @@ export type Workday = {
 export type WorkdayStatus = "CHECKED_IN" | "CHECKED_OUT";
 
 export type CreateWorkdayForm = {
-  user_id: string;
   group_id: string;
 };
 
 export type UpdateWorkdayForm = {
   id: string;
-  user_id: string;
-  group_id: string;
 };

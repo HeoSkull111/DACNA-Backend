@@ -4,44 +4,6 @@ import { Workday, CreateWorkdayForm, UpdateWorkdayForm } from "@workday/models/w
 
 import { InsertOneResult } from "mongodb";
 
-const addWorkday = async (
-  createWorkdayForm: CreateWorkdayForm
-): Promise<InsertOneResult<Workday>> => {
-  const workday = {
-    user_id: createWorkdayForm.user_id,
-    group_id: createWorkdayForm.group_id,
-    status: "CHECKED_IN",
-    created_at: new Date(),
-    updated_at: new Date(),
-  };
-
-  const result = await workdayRepository.addWorkday(workday);
-  return result;
-};
-
-const updateWorkday = async (updateWorkdayForm: UpdateWorkdayForm) => {
-  const tempWorkday = await workdayRepository.findWorkday(updateWorkdayForm.id);
-
-  if (!tempWorkday) {
-    throw new Error("Workday not found");
-  }
-
-  if (tempWorkday.status === "CHECKED_OUT") {
-    throw new Error("You already checked out");
-  }
-
-  const workday = {
-    ...tempWorkday,
-    user_id: updateWorkdayForm.user_id,
-    group_id: updateWorkdayForm.group_id,
-    status: "CHECKED_OUT",
-    updated_at: new Date(),
-  };
-
-  const result = await workdayRepository.updateWorkday(updateWorkdayForm.id, workday);
-  return result;
-};
-
 const getWorkday = async (id: string): Promise<Workday> => {
   const result = await workdayRepository.findWorkday(id);
 
@@ -61,8 +23,76 @@ const getWorkday = async (id: string): Promise<Workday> => {
   };
 };
 
+const getCurrentWorkday = async (user_id: string): Promise<Workday> => {
+  const result = await workdayRepository.findCurrentWorkday(user_id);
+
+  if (!result) {
+    throw new Error("Workday not found");
+  }
+
+  return {
+    id: result._id.toHexString(),
+    user_id: result.user_id,
+    group_id: result.group_id,
+    status: result.status,
+    check_in: result.check_in,
+    check_out: result.check_out,
+    created_at: result.created_at,
+    updated_at: result.updated_at,
+  };
+};
+
+const addWorkday = async (
+  user_id: string,
+  createWorkdayForm: CreateWorkdayForm
+): Promise<InsertOneResult<Workday>> => {
+  const userWorking = await workdayRepository.IsUserWorking(user_id);
+
+  if (userWorking) {
+    throw new Error(
+      "You are already working in another group. Please check out first or contact your manager."
+    );
+  }
+
+  const workday = {
+    user_id: user_id,
+    group_id: createWorkdayForm.group_id,
+    status: "CHECKED_IN",
+    check_in: new Date(),
+    check_out: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  const result = await workdayRepository.addWorkday(workday);
+  return result;
+};
+
+const updateWorkday = async (id: string) => {
+  const tempWorkday = await workdayRepository.findWorkday(id);
+
+  if (!tempWorkday) {
+    throw new Error("Workday not found");
+  }
+
+  if (tempWorkday.check_out !== null) {
+    throw new Error("You already checked out");
+  }
+
+  const workday: Workday = {
+    ...tempWorkday,
+    status: "CHECKED_OUT",
+    check_out: new Date(),
+    updated_at: new Date(),
+  };
+
+  const result = await workdayRepository.updateWorkday(id, workday);
+  return result;
+};
+
 export default {
+  getWorkday,
+  getCurrentWorkday,
   addWorkday,
   updateWorkday,
-  getWorkday,
 };
