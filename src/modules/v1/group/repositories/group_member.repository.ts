@@ -24,12 +24,21 @@ export const GetMember = async (groupID: string, memberID: string) => {
     },
   };
 
-  const lookupPipeline = {
+  const lookupUserPipeline = {
     $lookup: {
       from: "users",
       localField: "user_id",
       foreignField: "_id",
       as: "user",
+    },
+  };
+
+  const lookupUserProfilePipeline = {
+    $lookup: {
+      from: "user_profiles",
+      localField: "user_id",
+      foreignField: "user_id",
+      as: "user_profile",
     },
   };
 
@@ -46,8 +55,9 @@ export const GetMember = async (groupID: string, memberID: string) => {
   const selectFieldsPipeline = {
     $project: {
       id: "$user._id",
-      firstName: "$user.first_name",
-      lastName: "$user.last_name",
+      firstName: "$user_profile.first_name",
+      lastName: "$user_profile.last_name",
+      status: 1,
       email: "$user.email",
       photoUrl: "$user.photo_url",
       role: 1,
@@ -56,9 +66,13 @@ export const GetMember = async (groupID: string, memberID: string) => {
 
   const pipeline = [
     matchPipeline,
-    lookupPipeline,
+    lookupUserPipeline,
+    lookupUserProfilePipeline,
     {
       $unwind: "$user",
+    },
+    {
+      $unwind: "$user_profile",
     },
     removeFieldsPipeline,
     selectFieldsPipeline,
@@ -74,59 +88,77 @@ export const ListMembers = async (groupID: string, page?: number, limit?: number
   const _page = page || 1;
   const _limit = limit || 10;
 
-  const countPipeline = [
-    {
-      $match: {
-        group_id: groupObjectID,
-      },
+  const findGroup = {
+    $match: {
+      group_id: groupObjectID,
     },
+  };
+
+  const countPipeline = [
+    findGroup,
     {
       $count: "total",
     },
   ];
 
+  const lookupUserPipeline = {
+    $lookup: {
+      from: "users",
+      localField: "user_id",
+      foreignField: "_id",
+      as: "user",
+    },
+  };
+
+  const lookupUserProfilePipeline = {
+    $lookup: {
+      from: "user_profiles",
+      localField: "user_id",
+      foreignField: "user_id",
+      as: "user_profile",
+    },
+  };
+
+  const removeFieldsPipeline = {
+    $project: {
+      _id: 0,
+      user_id: 0,
+      group_id: 0,
+      created_at: 0,
+      updated_at: 0,
+    },
+  };
+
+  const selectFieldsPipeline = {
+    $project: {
+      id: "$user._id",
+      firstName: "$user_profile.first_name",
+      lastName: "$user_profile.last_name",
+      status: 1,
+      email: "$user.email",
+      photoUrl: "$user.photo_url",
+      role: 1,
+    },
+  };
+
   const dataPipeline = [
-    {
-      $match: {
-        group_id: groupObjectID,
-      },
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "user_id",
-        foreignField: "_id",
-        as: "user",
-      },
-    },
+    findGroup,
+    lookupUserPipeline,
+    lookupUserProfilePipeline,
     {
       $skip: (_page - 1) * _limit,
     },
     {
       $limit: _limit,
     },
-    {
-      $project: {
-        _id: 0,
-        user_id: 0,
-        group_id: 0,
-        created_at: 0,
-        updated_at: 0,
-      },
-    },
+    removeFieldsPipeline,
     {
       $unwind: "$user",
     },
     {
-      $project: {
-        id: "$user._id",
-        firstName: "$user.first_name",
-        lastName: "$user.last_name",
-        email: "$user.email",
-        photoUrl: "$user.photo_url",
-        role: 1,
-      },
+      $unwind: "$user_profile",
     },
+    selectFieldsPipeline,
   ];
 
   //return the total and the groups
@@ -166,9 +198,28 @@ export const AddMember = (groupID: string, userID: string, role: string) => {
     group_id: groupObjectID,
     user_id: userObjectID,
     role,
+    status: "LEFT",
     created_at: now,
     updated_at: now,
   };
 
   return db.collection("group_members").insertOne(query);
+};
+
+export const UpdateMemberStatus = (groupID: string, userID: string, status: "WORKING" | "LEFT") => {
+  const groupObjectID = ObjectId.createFromHexString(groupID);
+  const userObjectID = ObjectId.createFromHexString(userID);
+
+  const query = {
+    group_id: groupObjectID,
+    user_id: userObjectID,
+  };
+
+  const update = {
+    $set: {
+      status,
+    },
+  };
+
+  return db.collection("group_members").updateOne(query, update);
 };

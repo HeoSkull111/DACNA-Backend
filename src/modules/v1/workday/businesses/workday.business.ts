@@ -1,6 +1,7 @@
 import workdayRepository from "@workday/repositories/workday.repository";
+import { UpdateMemberStatus } from "@group/repositories/group_member.repository";
 
-import { Workday, CreateWorkdayForm, UpdateWorkdayForm } from "@workday/models/workday.model";
+import { Workday, CreateWorkdayForm } from "@workday/models/workday.model";
 
 import { InsertOneResult } from "mongodb";
 
@@ -65,6 +66,9 @@ const addWorkday = async (
   };
 
   const result = await workdayRepository.addWorkday(workday);
+
+  await UpdateMemberStatus(createWorkdayForm.group_id, user_id, "WORKING");
+
   return result;
 };
 
@@ -87,6 +91,9 @@ const updateWorkday = async (id: string) => {
   };
 
   const result = await workdayRepository.updateWorkday(id, workday);
+
+  await UpdateMemberStatus(workday.group_id, workday.user_id, "LEFT");
+
   return result;
 };
 

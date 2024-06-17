@@ -6,11 +6,7 @@ import { matchedData, validationResult } from "express-validator";
 import userBusiness from "@user/businesses/user.business";
 
 // models
-import { LoginUserForm, RegisterUserForm } from "@user/models/user.model";
-
-export const test = (req: Request, res: Response) => {
-  res.send("User Controller");
-};
+import { LoginUserForm, RegisterUserForm, UpdateUserForm } from "@user/models/user.model";
 
 export const getUser = async (req: Request, res: Response) => {
   const user = req.session.user;
@@ -49,6 +45,49 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
+export const updateUser = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array({ onlyFirstError: true }) });
+  }
+
+  const user = matchedData(req) as UpdateUserForm;
+
+  if (!req.session.user) {
+    const response: HttpResponse = {
+      status: 401,
+      message: "User not logged in",
+      error: null,
+      data: null,
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  try {
+    const resultUser = await userBusiness.updateUser(req.session.user.id, user);
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "User updated",
+      error: null,
+      data: resultUser,
+    };
+
+    res.status(response.status).json(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      message: "User not updated",
+      error: error.message,
+      data: null,
+    };
+
+    res.status(response.status).json(response);
+  }
+};
+
 export const registerUser = async (req: Request, res: Response) => {
   const errors = validationResult(req);
 
@@ -70,13 +109,13 @@ export const registerUser = async (req: Request, res: Response) => {
 
     req.session.regenerate((err) => {
       if (err) {
+        console.log("Error regenerating session");
         throw new Error("Error regenerating session");
       }
 
       req.session.user = resultUser;
+      res.status(response.status).json(response);
     });
-
-    res.status(response.status).json(response);
   } catch (error: any) {
     const response: HttpResponse = {
       status: 400,

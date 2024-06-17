@@ -136,8 +136,6 @@ export const listMembers = async (req: Request, res: Response) => {
 
     return res.status(response.status).send(response);
   }
-
-  res.send("List members");
 };
 
 export const createGroup = async (req: Request, res: Response) => {

@@ -6,7 +6,11 @@ import { logInformation } from "@middlewares/logger.middleware";
 import { isAuthenticated } from "@middlewares/session.middleware";
 
 //validations
-import { validateRegisterUserForm, validateLoginUserForm } from "./validations/user.validation";
+import {
+  validateRegisterUserForm,
+  validateLoginUserForm,
+  validateUpdateUserForm,
+} from "./validations/user.validation";
 
 //controllers
 import {
@@ -15,6 +19,7 @@ import {
   logoutUser,
   checkUser,
   getUser,
+  updateUser,
 } from "@user/controllers/user.controller.ts";
 
 const userRouter = express.Router();
@@ -23,6 +28,7 @@ userRouter.use(logInformation);
 userRouter.use(excludeRoute(isAuthenticated, "/register", "/login", "/check-user"));
 
 userRouter.get("/", getUser);
+userRouter.put("/update", validateUpdateUserForm, updateUser);
 userRouter.post("/register", validateRegisterUserForm, registerUser);
 userRouter.post("/login", validateLoginUserForm, loginUser);
 userRouter.put("/logout", logoutUser);
