@@ -43,6 +43,11 @@ const getCurrentWorkday = async (user_id: string): Promise<Workday> => {
   };
 };
 
+const getWorkdays = async (group_id: string, user_id: string, days: string): Promise<any> => {
+  const result = await workdayRepository.findWorkdaysByDate(group_id, user_id, days);
+  return result;
+};
+
 const addWorkday = async (
   user_id: string,
   createWorkdayForm: CreateWorkdayForm
@@ -100,6 +105,7 @@ const updateWorkday = async (id: string) => {
 export default {
   getWorkday,
   getCurrentWorkday,
+  getWorkdays,
   addWorkday,
   updateWorkday,
 };
