@@ -128,6 +128,51 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 };
 
+export const searchUser = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array({ onlyFirstError: true }) });
+  }
+
+  const query = matchedData(req) as { group_id: string; k: string; e: string[] };
+
+  const user_id = req.session.user?.id;
+
+  if (!user_id) {
+    const response: HttpResponse = {
+      status: 401,
+      message: "User not logged in",
+      error: null,
+      data: null,
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  try {
+    const resultUser = await userBusiness.searchUser(user_id, query.group_id, query.k, query.e);
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "User found",
+      error: null,
+      data: resultUser,
+    };
+
+    res.status(response.status).json(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 404,
+      message: "User not found",
+      error: error.message,
+      data: null,
+    };
+
+    res.status(response.status).json(response);
+  }
+};
+
 export const loginUser = async (req: Request, res: Response) => {
   const errors = validationResult(req);
 
@@ -176,7 +221,7 @@ export const loginUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     const response: HttpResponse = {
       status: 401,
-      message: "Invalid Password or Email",
+      message: "Invalid Password or Username",
       error: error.message,
       data: null,
     };

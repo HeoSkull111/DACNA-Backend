@@ -11,6 +11,7 @@ export type GroupMember = {
   user_id: string;
   group_id: string;
   role: string;
+  is_deleted: boolean;
   created_at: Date;
   updated_at: Date;
 };

@@ -7,7 +7,14 @@ import {
   DeleteGroup,
 } from "@group/repositories/group.repository";
 
-import { ListMembers, GetMember, AddMember } from "@group/repositories/group_member.repository";
+import {
+  ListMembers,
+  GetMember,
+  AddMember,
+  AddMembers,
+  IsMember,
+  DeleteMember,
+} from "@group/repositories/group_member.repository";
 
 //models
 import type { CreateGroupForm, UpdateGroupForm } from "@group/models/group.model";
@@ -47,6 +54,56 @@ const listMembers = async (page: number | string, limit: number | string, groupI
   const members = await ListMembers(groupID, page, limit);
 
   return members;
+};
+
+const isMember = async (groupID: string, memberID: string) => {
+  if (!groupID) {
+    throw new Error("Group ID is required");
+  }
+
+  if (!memberID) {
+    throw new Error("Member ID is required");
+  }
+
+  const member = await IsMember(groupID, memberID);
+
+  if (!member) {
+    return false;
+  }
+
+  return true;
+};
+
+const addMembers = async (groupID: string, members: string[]) => {
+  if (!groupID) {
+    throw new Error("Group ID is required");
+  }
+
+  if (!members || members.length === 0) {
+    throw new Error("Members are required");
+  }
+
+  const group = await AddMembers(groupID, members);
+
+  return group;
+};
+
+const deleteMember = async (userID: string, groupID: string, memberID: string) => {
+  if (!groupID) {
+    throw new Error("Group ID is required");
+  }
+
+  if (!memberID) {
+    throw new Error("Member ID is required");
+  }
+
+  if (userID === memberID) {
+    throw new Error("You can't delete yourself");
+  }
+
+  const member = await DeleteMember(groupID, memberID);
+
+  return member;
 };
 
 const listGroups = async (page: number | string, limit: number | string, userID: string) => {
@@ -99,7 +156,10 @@ const deleteGroup = async (groupID: string) => {
 export default {
   getGroup,
   getMember,
+  isMember,
   listMembers,
+  addMembers,
+  deleteMember,
   listGroups,
   createGroup,
   updateGroup,

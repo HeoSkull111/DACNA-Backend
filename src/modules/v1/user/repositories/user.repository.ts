@@ -24,6 +24,62 @@ const updateUser = async (id: ObjectId | string, user: any) => {
   return result;
 };
 
+const searchUser = async (query: string, excludes: string[]) => {
+  const excludesIds: any[] = [];
+  excludes.forEach((id) => {
+    if (id) {
+      excludesIds.push({
+        equals: {
+          path: "_id",
+          value: new ObjectId(id),
+        },
+      });
+    }
+  });
+
+  const pipeline = [
+    {
+      $search: {
+        index: "usernameandemail",
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: query,
+                path: "username",
+              },
+            },
+            {
+              autocomplete: {
+                query: query,
+                path: "email",
+              },
+            },
+          ],
+          mustNot: excludesIds,
+        },
+        sort: {
+          score: { $meta: "searchScore" },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        username: 1,
+        email: 1,
+        photo_url: 1,
+      },
+    },
+    {
+      $limit: 5,
+    },
+  ];
+
+  const result = await db.collection<User>("users").aggregate(pipeline).toArray();
+  return result;
+};
+
 const findUser = async (id: ObjectId | string) => {
   if (typeof id === "string") {
     id = new ObjectId(id);
@@ -55,6 +111,7 @@ const findUserByUsername = async (username: string) => {
 export default {
   addUser,
   updateUser,
+  searchUser,
   findUser,
   findUserByEmail,
   findUserByUsername,

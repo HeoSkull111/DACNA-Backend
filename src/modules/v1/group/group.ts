@@ -13,6 +13,10 @@ import {
   validateUpdateGroup,
   validateDeleteGroup,
   validateGetMember,
+  validateGetCurrentMember,
+  validateAddMember,
+  validateIsMember,
+  validateDeleteMember,
 } from "@group/validations/group.validation.ts";
 
 //controllers
@@ -24,6 +28,10 @@ import {
   listMembers,
   getMember,
   getGroups,
+  getCurrentMember,
+  addMembers,
+  isMember,
+  deleteMember,
 } from "@group/controllers/group.controller.ts";
 
 const groupRouter = express.Router();
@@ -35,6 +43,10 @@ groupRouter.use(isAuthenticated);
 groupRouter.get("/detail", validateGetGroup, getGroup);
 groupRouter.get("/list", validateGetGroups, getGroups);
 groupRouter.get("/member", validateGetMember, getMember);
+groupRouter.post("/is-member", validateIsMember, isMember);
+groupRouter.post("/add-members", validateAddMember, addMembers);
+groupRouter.delete("/delete-member", validateDeleteMember, deleteMember);
+groupRouter.get("/current-member", validateGetCurrentMember, getCurrentMember);
 groupRouter.get("/list-members", validateListMembers, listMembers);
 groupRouter.post("/create", validateCreateGroup, createGroup);
 groupRouter.put("/:id", validateUpdateGroup, updateGroup);

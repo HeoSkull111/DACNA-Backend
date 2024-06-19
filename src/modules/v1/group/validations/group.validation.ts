@@ -66,3 +66,56 @@ export const validateGetMember = [
     .isLength({ min: 24, max: 24 })
     .withMessage("Member id must be 24 characters long"),
 ];
+
+export const validateGetCurrentMember = [
+  query("group_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Group id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
+];
+
+export const validateAddMember = [
+  body("group_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Group id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
+  body("member_ids")
+    .notEmpty()
+    .withMessage("Member ids is required")
+    .isArray()
+    .withMessage("Member ids must be an array"),
+];
+
+export const validateDeleteMember = [
+  query("group_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Group id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
+  query("member_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Member id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Member id must be 24 characters long"),
+];
+
+export const validateIsMember = [
+  query("group_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Group id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Group id must be 24 characters long"),
+  query("member_id")
+    .isString()
+    .notEmpty()
+    .withMessage("Member id is required")
+    .isLength({ min: 24, max: 24 })
+    .withMessage("Member id must be 24 characters long"),
+];

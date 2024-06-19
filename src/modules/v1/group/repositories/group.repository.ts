@@ -47,7 +47,6 @@ export const ListGroups = async (user_id: string, page?: number, limit?: number)
     {
       $match: {
         user_id: userObjectID,
-        role: "owner",
       },
     },
     {

@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import userRepository from "@user/repositories/user.repository";
 import userProfileRepository from "@user/repositories/user_profile.repository";
 
+import { IsOwner } from "@group/repositories/group_member.repository";
+
 import {
   FullUser,
   LoginUserForm,
@@ -108,6 +110,36 @@ const updateUser = async (id: string, user: UpdateUserForm): Promise<FullUser> =
   };
 };
 
+const searchUser = async (
+  user_id: string,
+  group_id: string,
+  query: string,
+  excludes: string[]
+): Promise<Omit<User, "password">[]> => {
+  if (!query) {
+    return [];
+  }
+
+  const isOwner = await IsOwner(group_id, user_id);
+
+  if (!isOwner) {
+    throw new Error("User is not the owner of the group");
+  }
+
+  const users = await userRepository.searchUser(query, [user_id, ...excludes]);
+
+  if (!users) {
+    throw new Error("No user found");
+  }
+
+  return users.map((user: any) => ({
+    id: user._id.toHexString(),
+    username: user.username,
+    email: user.email,
+    photo_url: user.photo_url,
+  }));
+};
+
 const registerUser = async (user: RegisterUserForm): Promise<Omit<User, "password">> => {
   //Check if user already exists
   const isUserExistByEmail = await userRepository.findUserByEmail(user.email);
@@ -116,7 +148,9 @@ const registerUser = async (user: RegisterUserForm): Promise<Omit<User, "passwor
     throw new Error("This email is already registered");
   }
 
-  const isUserExistByUsername = await userRepository.findUserByUsername(user.username);
+  const isUserExistByUsername = await userRepository.findUserByUsername(
+    user.username.toLowerCase()
+  );
 
   if (isUserExistByUsername) {
     throw new Error("This username is already taken");
@@ -126,7 +160,7 @@ const registerUser = async (user: RegisterUserForm): Promise<Omit<User, "passwor
   const salt = await bcrypt.genSalt(10);
 
   const userDocument: Omit<User, "id"> = {
-    username: user.username,
+    username: user.username.toLowerCase(),
     email: user.email,
     password: "",
     photo_url: user.photo_url || "",
@@ -155,28 +189,28 @@ const registerUser = async (user: RegisterUserForm): Promise<Omit<User, "passwor
 
   return {
     id: repositoryResult.insertedId.toHexString(),
-    username: user.username,
+    username: user.username.toLowerCase(),
     email: user.email,
     photo_url: user.photo_url || "",
   };
 };
 
 const loginUser = async (user: LoginUserForm): Promise<Omit<User, "password">> => {
-  const tempUser = await userRepository.findUserByUsername(user.username);
+  const tempUser = await userRepository.findUserByUsername(user.username.toLowerCase());
 
   if (!tempUser) {
-    throw new Error("User does not exist");
+    throw new Error("This username does not exist");
   }
 
   const isMatch = await bcrypt.compare(user.password, tempUser.password);
 
   if (!isMatch) {
-    throw new Error("Invalid credentials");
+    throw new Error("Invalid credentials. Incorrect password");
   }
 
   return {
     id: tempUser._id.toHexString(),
-    username: tempUser.username,
+    username: tempUser.username.toLowerCase(),
     email: tempUser.email,
     photo_url: tempUser.photo_url,
   };
@@ -185,6 +219,7 @@ const loginUser = async (user: LoginUserForm): Promise<Omit<User, "password">> =
 export default {
   getUser,
   updateUser,
+  searchUser,
   registerUser,
   loginUser,
 };

@@ -74,6 +74,38 @@ export const getGroups = async (req: Request, res: Response) => {
   }
 };
 
+export const isMember = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0] });
+  }
+
+  const { group_id, member_id } = matchedData(req);
+
+  try {
+    const isMember = await groupBusiness.isMember(group_id, member_id);
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "Member found",
+      error: null,
+      data: isMember,
+    };
+
+    return res.status(response.status).send(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      error: "Bad Request",
+      message: error.message,
+      data: null,
+    };
+
+    return res.status(response.status).send(response);
+  }
+};
+
 export const getMember = async (req: Request, res: Response) => {
   const errors = validationResult(req);
 
@@ -91,6 +123,127 @@ export const getMember = async (req: Request, res: Response) => {
       message: "Member found",
       error: null,
       data: member,
+    };
+
+    return res.status(response.status).send(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      error: "Bad Request",
+      message: error.message,
+      data: null,
+    };
+
+    return res.status(response.status).send(response);
+  }
+};
+
+export const getCurrentMember = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0] });
+  }
+
+  const { group_id } = matchedData(req);
+  const user_id = req.session.user!.id;
+
+  if (!user_id) {
+    const response: HttpResponse = {
+      status: 401,
+      message: "Unauthorized",
+      error: "User not logged in",
+      data: null,
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  try {
+    const member = await groupBusiness.getMember(group_id, user_id);
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "Member found",
+      error: null,
+      data: member,
+    };
+
+    return res.status(response.status).send(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      error: "Bad Request",
+      message: error.message,
+      data: null,
+    };
+
+    return res.status(response.status).send(response);
+  }
+};
+
+export const addMembers = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0] });
+  }
+
+  const { group_id, member_ids } = matchedData(req) as { group_id: string; member_ids: string[] };
+
+  try {
+    await groupBusiness.addMembers(group_id, member_ids);
+
+    const response: HttpResponse = {
+      status: 201,
+      message: "Members added",
+      error: null,
+      data: null,
+    };
+
+    return res.status(response.status).send(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      error: "Bad Request",
+      message: error.message,
+      data: null,
+    };
+
+    return res.status(response.status).send(response);
+  }
+};
+
+export const deleteMember = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array()[0] });
+  }
+
+  const { group_id, member_id } = matchedData(req);
+
+  const user_id = req.session.user!.id;
+
+  if (!user_id) {
+    const response: HttpResponse = {
+      status: 401,
+      message: "Unauthorized",
+      error: "User not logged in",
+      data: null,
+    };
+
+    return res.status(response.status).json(response);
+  }
+
+  try {
+    await groupBusiness.deleteMember(user_id, group_id, member_id);
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "Member deleted",
+      error: null,
+      data: null,
     };
 
     return res.status(response.status).send(response);
