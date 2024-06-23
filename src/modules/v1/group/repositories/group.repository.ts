@@ -26,6 +26,32 @@ export const ListGroups = async (user_id: string, page?: number, limit?: number)
       $unwind: "$group",
     },
     {
+      $lookup: {
+        from: "group_members",
+        let: {
+          group_id: "$group._id",
+        },
+        // get the owner of the group, by matching the group_id and the role
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ["$group_id", "$$group_id"],
+                  },
+                  {
+                    $eq: ["$role", "owner"],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+        as: "owner",
+      },
+    },
+    {
       $skip: (_page - 1) * _limit,
     },
     {
@@ -33,11 +59,15 @@ export const ListGroups = async (user_id: string, page?: number, limit?: number)
     },
     {
       $project: {
+        _id: 0,
         id: "$group._id",
         name: "$group.name",
         description: "$group.description",
         created_at: "$group.created_at",
         updated_at: "$group.updated_at",
+        owner: {
+          $arrayElemAt: ["$owner", 0],
+        },
       },
     },
   ];
