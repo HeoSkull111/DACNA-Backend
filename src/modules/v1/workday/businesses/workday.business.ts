@@ -48,6 +48,21 @@ const getWorkdays = async (group_id: string, user_id: string, days: string): Pro
   return result;
 };
 
+const getStatisticalWorkdays = async (
+  group_id: string,
+  user_id: string,
+  begin_date: string,
+  end_date: string
+): Promise<any> => {
+  const result = await workdayRepository.findStatisticalWorkdays(
+    group_id,
+    user_id,
+    begin_date,
+    end_date
+  );
+  return result;
+};
+
 const addWorkday = async (
   user_id: string,
   createWorkdayForm: CreateWorkdayForm
@@ -106,6 +121,7 @@ export default {
   getWorkday,
   getCurrentWorkday,
   getWorkdays,
+  getStatisticalWorkdays,
   addWorkday,
   updateWorkday,
 };

@@ -199,3 +199,45 @@ export const getWorkdays = async (req: Request, res: Response) => {
     return res.status(response.status).json(response);
   }
 };
+
+export const getStatisticalWorkdays = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  const validData = matchedData(req) as {
+    group_id: string;
+    user_id: string;
+    begin_date: string;
+    end_date: string;
+  };
+
+  try {
+    const resultWorkdays = await workdayBusiness.getStatisticalWorkdays(
+      validData.group_id,
+      validData.user_id,
+      validData.begin_date,
+      validData.end_date
+    );
+
+    const response: HttpResponse = {
+      status: 200,
+      message: "Workdays retrieved",
+      error: null,
+      data: resultWorkdays,
+    };
+
+    return res.status(response.status).json(response);
+  } catch (error: any) {
+    const response: HttpResponse = {
+      status: 400,
+      error: "Bad Request",
+      message: error.message,
+      data: null,
+    };
+
+    return res.status(response.status).json(response);
+  }
+};

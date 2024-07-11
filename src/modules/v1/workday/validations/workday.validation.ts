@@ -15,3 +15,10 @@ export const validateGetWorkdaysForm = [
   query("user_id").notEmpty().withMessage("User id is required"),
   query("days").notEmpty().withMessage("Days is required"),
 ];
+
+export const validateGetStatisticalWorkdaysForm = [
+  query("group_id").notEmpty().withMessage("Group id is required"),
+  query("user_id").notEmpty().withMessage("User id is required"),
+  query("begin_date").optional().isISO8601().withMessage("Invalid date format"),
+  query("end_date").optional().isISO8601().withMessage("Invalid date format"),
+];

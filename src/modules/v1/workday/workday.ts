@@ -8,6 +8,7 @@ import { isAuthenticated } from "@middlewares/session.middleware";
 import {
   validateCheckInForm,
   validateCheckOutForm,
+  validateGetStatisticalWorkdaysForm,
   validateGetWorkdayForm,
   validateGetWorkdaysForm,
 } from "./validations/workday.validation";
@@ -17,6 +18,7 @@ import {
   checkIn,
   checkOut,
   getCurrentWorkday,
+  getStatisticalWorkdays,
   getWorkday,
   getWorkdays,
 } from "@workday/controllers/workday.controller.ts";
@@ -28,6 +30,7 @@ workdayRouter.use(isAuthenticated);
 
 workdayRouter.get("/", validateGetWorkdayForm, getWorkday);
 workdayRouter.get("/by-date", validateGetWorkdaysForm, getWorkdays);
+workdayRouter.get("/statistical", validateGetStatisticalWorkdaysForm, getStatisticalWorkdays);
 workdayRouter.get("/current", getCurrentWorkday);
 workdayRouter.post("/check-in", validateCheckInForm, checkIn);
 workdayRouter.post("/check-out", validateCheckOutForm, checkOut);
